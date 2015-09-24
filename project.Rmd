@@ -10,13 +10,69 @@ In this project we were given personal activity data (from devices like the Fitb
 
 Cleaning the data
 ==================
-```{r, echo=FALSE}
-##dim(train1)
+```{r}
+library(caret)
+library(ggplot2)
+library(randomForest)
+library(e1071)
+training <- read.csv("pml-training.csv")
+testing <- read.csv("pml-testing.csv")
+set.seed(10151971)
+##split the training data into subsets for tuning
+inTrain <- createDataPartition(y=training$classe, p=0.7,list=F)
+train1 <- training[inTrain,]
+train2 <- training[-inTrain,]
+##remove variables with near zero variance
+nearZero <- nearZeroVar(train1)
+train1 <- train1[,-nearZero]
+train2 <- train2[,-nearZero]
+##remove variables where the value is almost always NA
+noValue <- sapply(train1, function(x)mean(is.na(x))) > 0.95
+train1 <- train1[,noValue==F]
+train2 <- train2[,noValue==F]
+##remove the first five columns because they are demographic and won't help with the model
+train1 <- train1[,-(1:5)]
+train2 <- train2[,-(1:5)]
 ```
 
 Build and Evaluate the Model
 =============================
-Initially we are trying a Random Forest model based on its accuracy and the number of variables we still have in our dataset.
+Initially we are trying a Random Forest model based on its accuracy and the number of variables we still have in our dataset.  I tried moving from 3 fold to 4 in the cross validation, and while the Out of Band error decreased 2%, the additional cross validation only seemed to help in one of the 5 classes, so I moved back to 3 fold for performance reasons..
+
+```{r}
+tr <- trainControl(method="cv", number = 3) ## set the 3 fold cross validation
+modelFit2 <- train(classe ~ .,data=train1,method="rf",trControl = tr) ##train the model with the subset of training data
+modelFit2$finalModel
+```
+
+Since the initial testing seems good, I will use this model to predict the remaining subset of the training data. Finally we show the confusion matrix of the predictions against the actual values from this subset.
+```{r}
+prediction2 <- predict(modelFit2,newdata=train2)
+confMatrix2 <- confusionMatrix(train2$classe, prediction2)
+confMatrix2
+```
+Accuracy in the prediction is 99.73 %, leaving a predicted out of sample error of 0.27 %. My only concern at this point based on those numbers, and the fact that we used Random Forest, would be potential overfitting.
 
 Predict the Testing Set
 ========================
+Now we move onto predicting the testing set.  First, I will train the model on the full training set.  We also need to clean the data of the full set, as well as the testing set at this point.
+```{r}
+##remove variables with near zero variance
+nearZero <- nearZeroVar(training)
+training <- training[,-nearZero]
+testing <- testing[,-nearZero]
+##remove variables where the value is almost always NA
+noValue <- sapply(training, function(x)mean(is.na(x))) > 0.95
+training <- training[,noValue==F]
+testing <- testing[,noValue==F]
+##remove the first five columns because they are demographic and won't help with the model
+training <- training[,-(1:5)]
+testing <- testing[,-(1:5)]
+
+tr <- trainControl(method="cv", number = 3)
+modelFit2 <- train(classe ~ .,data=training,method="rf",trControl = tr)
+
+prediction2 <- predict(modelFit2,newdata=testing)
+
+```
+For purposes of the class, these predictions were written to individual files for submission, so no confusion matrix was available.
