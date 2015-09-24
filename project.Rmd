@@ -1,0 +1,22 @@
+---
+title: "Practical Machine Learning - Final Project"
+author: "Collin Keen"
+output: html_document
+---
+Introduction
+============
+
+In this project we were given personal activity data (from devices like the Fitbit, and Nike FuelBand) for 6 participants.  The data shows the accelerometer readings while they perform several excercises.  The goal in the project was to build a model that would successfully predict the type of exercise they were performing, shown as the classe variable in the data.  My analysis consisted of splitting the training data into two sets,  and cleaning those sets and the testing set.  After the model was tested, our final directive was to predict for the 20 cases in the testing set and submit those for review.
+
+Cleaning the data
+==================
+```{r, echo=FALSE}
+##dim(train1)
+```
+
+Build and Evaluate the Model
+=============================
+
+
+Predict the Testing Set
+========================
