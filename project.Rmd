@@ -16,7 +16,7 @@ Cleaning the data
 
 Build and Evaluate the Model
 =============================
-
+Initially we are trying a Random Forest model based on its accuracy and the number of variables we still have in our dataset.
 
 Predict the Testing Set
 ========================
